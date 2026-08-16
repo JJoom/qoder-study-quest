@@ -1,0 +1,13 @@
+# Node
+node_modules/
+npm-debug.log*
+
+# VitePress
+docs/.vitepress/dist/
+docs/.vitepress/cache/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

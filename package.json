@@ -1,0 +1,14 @@
+{
+  "name": "qoder-study-quest-docs",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Qoder AI 企业级开发实战课程文档站",
+  "scripts": {
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
+  },
+  "devDependencies": {
+    "vitepress": "^1.6.3"
+  }
+}
