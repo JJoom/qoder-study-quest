@@ -82,16 +82,17 @@
 | 工具 | 版本要求 | 用途 | 何时用到 |
 | --- | --- | --- | --- |
 | Qoder | 最新版 | AI IDE，课程主角 | 第 01 讲起全程使用 |
+| Python | 3.11+ | 第 01 讲练习与第 03 讲 Todo CLI 演练 | 第 01 讲起 |
+| Node.js | 20.19+（兼顾 OpenSpec 与前端） | 安装 OpenSpec CLI、运行 Vue 前端 | 第 03 讲起 |
 | JDK | 17+ | 运行 Spring Boot 后端 | 第 04 讲起 |
 | Maven | 3.8+ | Java 项目构建 | 第 04 讲起 |
 | MySQL | 8.x | 数据库 | 第 05 讲起 |
 | Redis | 6.x+（Windows 可用 Docker 版） | 缓存与购物车存储 | 第 09 讲起 |
-| Node.js | 18+ | 运行 Vue 前端 | 第 11 讲起 |
 | Git | 任意较新版本 | 版本控制 | 第 04 讲起 |
 | OpenSpec CLI | Node.js 20.19+，`@fission-ai/openspec` 最新版 | Spec 驱动开发工具 | 第 03 讲起 |
 | Docker | 任意较新版本（可选） | 容器化部署 | 第 16 讲 |
 
-> 提示：暂时没装 MySQL、Redis 也没关系，课程前半部分（第 1-3 讲）只需要 Qoder 和 Node.js 即可开始。
+> 提示：暂时没装 MySQL、Redis 也没关系，课程前半部分（第 1-3 讲）只需要 Qoder、Python 和 Node.js 即可开始。
 
 ## 每讲的学习方法
 
