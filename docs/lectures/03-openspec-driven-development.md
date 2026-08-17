@@ -9,6 +9,7 @@
 - [ ] 解释为什么「一句话需求直接让 AI 写代码」会翻车
 - [ ] 说出 Spec 驱动开发（SDD）的核心理念
 - [ ] 安装并初始化 OpenSpec
+- [ ] 知道 /opsx:explore 的定位：需求不清时先「零成本思考」
 - [ ] 完整走一遍 propose（提案）→ apply（实现）→ sync（合并）→ archive（归档）流程
 - [ ] 看懂每个阶段产出的 Markdown 工件的作用，理解「增量规格（delta）」
 - [ ] 了解 Qoder Plan Mode 与 OpenSpec 的关系（轻量补充）
@@ -16,7 +17,7 @@
 本讲地图：
 
 ```
-翻车案例 → SDD 理念 → 安装 OpenSpec → 四步实战演练 → 质量检查 → Plan Mode 对比
+翻车案例 → SDD 理念 → 安装 OpenSpec → 探索与提案 → 实现与归档 → 质量检查 → Plan Mode 对比
 ```
 
 ## 2. 术语表
@@ -126,7 +127,23 @@ openspec-demo/
 - 代码注释与文档使用中文
 ```
 
-## 6. 实战演练：Todo CLI 的四步流程
+## 6. 实战演练：Todo CLI 的完整流程
+
+> 命令名提示：`/opsx:propose` 是标准写法，但不同 AI 工具的拼写可能略有差异（如 Cursor/GitHub Copilot 里是 `/opsx-propose`，Codex 里是 `$openspec-propose`）。`openspec init` 完成后会打印你所选工具对应的命令形式，以它为准。
+>
+> 官方使用建议：进入 apply 实现阶段前**先清理对话上下文**（呼应第 02 讲的「何时开新会话」）——把提案文档 @ 给新会话，比拖着长长的规划历史开工效果更好。
+
+### 阶段 0（可选）：explore——需求不清时先探索
+
+如果你还不确定要做什么、怎么做，不必硬写提案。OpenSpec 默认流程提供了「零风险思考伙伴」：
+
+> **指令示例：**
+>
+> ```
+> /opsx:explore 我想给待办清单加一个提醒功能，但不确定命令行工具怎么做提醒才合理，帮我分析几种方案。
+> ```
+
+explore 不生成任何文档、不写代码，只是一场有代码库上下文的方案讨论；想清楚后再进入 propose。本讲演练需求已很明确，可直接跳过此阶段——但在 QShop 这样真实项目里，它是需求澄清的好帮手。
 
 ### 阶段 1：propose——一次性生成完整提案
 
@@ -160,7 +177,7 @@ openspec-demo/
 - 不满意就直接让 AI 改：「proposal.md 补充：标记完成时记录完成时间」
 - **确认满意前，不要进入下一步**——改文档比改代码便宜得多
 
-> 小插曲：如果 AI 不认识 `/opsx:propose` 命令（Generic 集成时可能发生），直接把指令改成自然语言：「请先阅读 @openspec/AGENTS.md，然后按 OpenSpec 流程为下面的需求创建变更提案：……」——效果相同。
+> 小插曲：如果 AI 不认识 `/opsx:propose` 命令（Generic 集成时可能发生），先确认是不是上面提到的拼写差异问题；还不行就把指令改成自然语言：「请先阅读 @openspec/AGENTS.md，然后按 OpenSpec 流程为下面的需求创建变更提案：……」——效果相同。
 
 ### 阶段 2：apply——逐任务实现
 
@@ -208,6 +225,8 @@ propose（提案）→ apply（实现）→ sync/archive（合并归档）
 | --- | --- | --- |
 | `openspec validate` | 检查规格文件结构是否完整合规（只查结构，不查行为对错） | 提案生成后、归档前 |
 | `/opsx:verify` | 检查实现的完整度与一致性（建议性质，不阻止归档） | apply 之后，归档之前顺手跑一次 |
+
+> 注意：`/opsx:verify` 属于扩展命令集，默认 profile 里可能没有。需要时执行 `openspec config profile` 选择扩展工作流，再用 `openspec update` 刷新命令；升级 OpenSpec 版本后也建议跑一次 `openspec update` 保持命令与指引最新。
 
 > 提醒：OpenSpec 的检查都是「提醒」而非「强制门禁」——规格写得对不对、实现有没有偏离，最终靠你审查。这也是它「轻」的代价，第 8 讲常见坑会再提。
 
