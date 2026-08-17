@@ -1,12 +1,12 @@
-# 第 04 讲 · 需求分析与项目启动（Spec Kit 主线实战）
+# 第 04 讲 · 需求分析与项目启动（OpenSpec 主线实战）
 
-> 从本讲起正式进入 QShop 电商项目。本讲用 Spec Kit 完成「立项」：写项目宪法、写总体规格书、定技术方案、配置项目 Rules，并初始化 Spring Boot 工程与 Git 仓库。
+> 从本讲起正式进入 QShop 电商项目。本讲用 OpenSpec 完成「立项」：写项目约定（project.md）、提交首个变更提案（含规格与方案）、配置项目 Rules，并初始化 Spring Boot 工程与 Git 仓库。
 
 ## 1. 学习目标与本讲地图
 
 学完本讲，你将能够：
 
-- [ ] 用 Spec Kit 为真实项目制定宪法与总体规格书
+- [ ] 用 OpenSpec 为真实项目建立 project.md 约定与首个变更提案
 - [ ] 用 AI 澄清模糊需求，产出 PRD 级别的需求文档
 - [ ] 编写 QShop 的项目级 Rules
 - [ ] 初始化 Spring Boot 3 工程骨架并成功启动
@@ -15,7 +15,7 @@
 本讲地图：
 
 ```
-需求澄清 → 宪法 → 规格书 → 技术方案 → 项目 Rules → 工程初始化 → Git
+需求澄清 → 项目约定 → 变更提案 → 项目 Rules → 工程初始化 → Git
 ```
 
 ## 2. 术语表
@@ -32,10 +32,10 @@
 
 | 能力 | 本讲用法 |
 | --- | --- |
-| Agent 对话 + Spec Kit 命令 | 生成宪法、规格书、方案 |
+| Agent 对话 + OpenSpec 命令 | 生成项目约定、变更提案（含规格与方案） |
 | Rules 配置 | 沉淀 QShop 项目规范，后续所有讲持续生效 |
 | 终端 | 验证 JDK/Maven、执行 git 命令 |
-| 代码生成 | 按宪法与规格生成工程骨架 |
+| 代码生成 | 按项目约定与提案生成工程骨架 |
 
 ## 4. 企业级知识点：需求分析怎么做
 
@@ -73,73 +73,56 @@ QShop 的标准答案已沉淀在课程的 [项目规格书](../project-spec.md)
 
 **检查要点**：把每个问题想清楚并回答。参考答案以 [项目规格书](../project-spec.md) 为准（游客可浏览、加购需登录、下单扣库存、管理员用种子数据等）。
 
-### 步骤 2：初始化 Spec Kit 并立宪法
+### 步骤 2：初始化 OpenSpec 并写项目约定
 
 在 `qshop/` 目录执行：
 
 ```powershell
-specify init . --integration qoder
+openspec init
 ```
 
-> 若版本不支持 `qoder`，用交互式选择（直接 `specify init .`）或 `--integration generic --integration-options="--commands-dir .speckit-commands"`。
+> 交互式选择 AI 工具时有 Qoder 就选 Qoder，没有就选 Generic（生成通用 AGENTS.md，Qoder 读取后同样能遵循流程）。
 
-然后在对话中：
+然后编辑 `openspec/project.md`，写入项目不可逾越的原则（相当于项目「宪法」）：
 
-> **提示词示例：**
+> **project.md 内容示例（可直接复制）：**
 >
-> ```
-> /speckit.constitution 为 QShop 电商系统制定项目宪法：
+> ```markdown
+> # QShop 项目约定
 > 1. 单体架构，禁止引入微服务组件（网关、注册中心、配置中心等）
 > 2. 后端 Spring Boot 3.x + JDK 17 + MyBatis-Plus + MySQL 8 + Redis，前端 Vue 3 + Element Plus
 > 3. 分层架构：Controller 只做参数校验与转发，业务逻辑全部在 Service
 > 4. 所有接口统一响应体 {code, message, data}，错误码遵循项目错误码表
 > 5. 金额计算必须用 BigDecimal 或 DECIMAL，禁止浮点
 > 6. 密码 BCrypt 加密，日志禁止输出密码与令牌
-> 7. 每个模块实现前必须先有 spec 文档，禁止无规格编码
+> 7. 每个模块实现前必须先有变更提案（proposal），禁止无规格编码
 > ```
-
-**预期产出**：`.specify/memory/constitution.md`。
 
 **检查要点**：逐条核对，特别是第 3、7 条这种「流程性原则」——它们是后面所有讲的护栏。
 
-### 步骤 3：写总体规格书（specify）
+### 步骤 3：提交首个变更提案（propose）
 
 > **提示词示例：**
 >
 > ```
-> /speckit.specify 基于我们刚才澄清的需求，为 QShop 编写总体功能规格：
+> /opsx:propose 为 QShop 电商系统创建核心功能提案（先只做提案，不实现）：
 > 角色：游客、注册用户、管理员。
 > 功能域：认证、商品浏览（分类/列表/详情）、购物车、订单、模拟支付、后台管理（商品/分类/用户）、RBAC。
+> 技术约束（写入 design.md）：后端模块划分（user/auth/category/product/cart/order/payment）、
+> 数据模型概览（需要哪些表）、API 规范（统一前缀 /api/v1、统一响应体、分页规范）、
+> 认证方案（JWT）、前后端交互方式（REST + JSON）。
 > 请输出每个功能域的用户故事与验收标准，并明确列出本期不做的事项。
 > ```
 
-**预期产出**：`specs/001-qshop-core/spec.md`，结构与第 03 讲演练一致，但内容覆盖整个 QShop。
+**预期产出**：`openspec/changes/add-qshop-core/`（或类似名称），含 proposal.md、design.md、tasks.md 与 delta 规格。
 
 **检查要点**：
 
 - 与课程规格书的功能域清单逐条对照，确认无遗漏
 - 「本期不做」清单必须存在且清晰（防止后续范围蔓延）
+- design.md 的模块划分与 project.md 第 3 条的分层要求兼容；API 规范与课程规格书第 5 节一致（`/api/v1` 前缀、统一响应体、`page/size` 分页）——proposal 阶段一次生成规格与设计，但审查标准不变：**改文档比改代码便宜得多**
 
-### 步骤 4：制定技术方案（plan）
-
-> **提示词示例：**
->
-> ```
-> /speckit.plan 技术栈已在宪法中锁定。请制定 QShop 的总体技术方案：
-> 后端模块划分（user/auth/category/product/cart/order/payment）、
-> 数据模型概览（需要哪些表）、API 规范（统一前缀 /api/v1、统一响应体、分页规范）、
-> 认证方案（JWT）、前后端交互方式（REST + JSON）。
-> 请先输出方案要点供我确认，不要开始写代码。
-> ```
-
-**预期产出**：`specs/001-qshop-core/plan.md`。
-
-**检查要点**：
-
-- 模块划分是否与宪法第 3 条的分层要求兼容
-- API 规范是否与课程规格书第 5 节一致（`/api/v1` 前缀、统一响应体、`page/size` 分页）
-
-### 步骤 5：配置项目级 Rules
+### 步骤 4：配置项目级 Rules
 
 在项目的 Rules 中写入 QShop 长期规范（创建方式同第 02 讲练习）：
 
@@ -164,7 +147,7 @@ specify init . --integration qoder
 
 **检查要点**：让 AI 复述当前生效的规则，确认 Rules 已被加载。
 
-### 步骤 6：初始化 Spring Boot 工程
+### 步骤 5：初始化 Spring Boot 工程
 
 > **提示词示例：**
 >
@@ -174,7 +157,7 @@ specify init . --integration qoder
 > - 依赖：spring-boot-starter-web、spring-boot-starter-validation、
 >   mybatis-plus-spring-boot3-starter、mysql-connector-j、spring-boot-starter-data-redis、
 >   spring-boot-starter-security、jjwt（api/impl/jackson）、springdoc-openapi-starter-webmvc-ui、lombok
-> - 按宪法建立包结构 common/config/security/modules
+> - 按 project.md 约定建立包结构 common/config/security/modules
 > - application.yml 配置 MySQL（数据库名 qshop）、Redis、服务端口 8080、context-path 留空
 > 生成后告诉我如何启动验证。
 > ```
@@ -196,7 +179,7 @@ mvn spring-boot:run
 - 包结构是否严格符合 Rules 约定
 - `application.yml` 中**不得出现真实密码硬编码**（用占位符或本地开发配置，后续讲会引入环境变量）
 
-### 步骤 7：建立 Git 仓库
+### 步骤 6：建立 Git 仓库
 
 ```powershell
 cd qshop
@@ -215,12 +198,12 @@ git init
 
 ```powershell
 git add .
-git commit -m "chore: 初始化 QShop 项目骨架与 Spec Kit 规格文档"
+git commit -m "chore: 初始化 QShop 项目骨架与 OpenSpec 提案文档"
 ```
 
 **检查要点**：`git status` 确认 `target/` 等目录没有被纳入跟踪。
 
-### 步骤 8：Git 零基础速通（本课程必备最小知识）
+### 步骤 7：Git 零基础速通（本课程必备最小知识）
 
 后面每一讲都会提交 Git，这里一次性把必备命令讲透。**Git 一句话理解：代码的「存档系统」——随时存档，随时回读。**
 
@@ -241,21 +224,21 @@ git commit -m "chore: 初始化 QShop 项目骨架与 Spec Kit 规格文档"
 
 1. **依赖坐标幻觉**：AI 可能编造不存在的 artifactId 或版本。验证方法：`mvn dependency:resolve` 能否拉取成功；拉不到就去 Maven 中央仓库搜索确认。
 2. **Spring Boot 2 与 3 混淆**：AI 训练数据里 Boot 2 的 `javax.*` 写法极多，生成 Boot 3 代码时可能混入 `javax` 包名——Boot 3 必须是 `jakarta.*`。发现 `javax.servlet`、`javax.validation` 立即要求改正。
-3. **宪法被悄悄违反**：AI 可能「顺手」引入一个网关组件或建议拆服务。对照宪法驳回。
+3. **项目约定被悄悄违反**：AI 可能「顺手」引入一个网关组件或建议拆服务。对照 project.md 驳回。
 4. **配置文件泄密**：检查 `application.yml` 没有真实账号密码；课程中统一用本地开发占位值。
 
 ## 7. 课后练习任务
 
-1. 完善 spec.md：补充「订单状态流转」的用户故事（对照课程规格书第 6 节）
-2. 让 AI 基于宪法检查一遍 plan.md，输出「一致性检查报告」
+1. 完善提案：在 proposal.md 中补充「订单状态流转」的用户故事（对照课程规格书第 6 节）
+2. 让 AI 基于 project.md 检查一遍提案（proposal.md + design.md），输出「一致性检查报告」
 3. 给 Rules 增加一条你自己在实战中发现的约定（例如「所有列表接口必须支持分页」）
 4. 完成第二次 Git 提交，提交信息说明本次改动内容
 
 ## 8. 验收标准清单
 
-- [ ] QShop 宪法、总体规格书、技术方案三份文档齐备且已人工审查
+- [ ] QShop 的 project.md 约定、首个变更提案（含规格与设计）齐备且已人工审查
 - [ ] 项目 Rules 生效，AI 能复述关键约定
-- [ ] `qshop-server` 工程结构符合宪法与 Rules 约定
+- [ ] `qshop-server` 工程结构符合 project.md 约定与 Rules 约定
 - [ ] Maven 依赖全部可解析（无幻觉坐标）
 - [ ] Git 仓库已建立，`.gitignore` 正确，至少两次提交
 - [ ] 能回答：为什么「本期不做」清单和需求本身一样重要

@@ -6,7 +6,7 @@
 
 学完本讲，你将能够：
 
-- [ ] 用 Spec Kit 完成商品模块的规格与任务拆分
+- [ ] 用 OpenSpec 完成商品模块的提案与任务拆分
 - [ ] 让 AI 一次性生成模块级代码（entity 到 controller 全套）并系统审查
 - [ ] 实现 MyBatis-Plus 分页查询与条件搜索
 - [ ] 实现图片上传（本地存储）与静态资源访问
@@ -30,27 +30,27 @@
 
 ## 3. 分步实战
 
-### 步骤 1：模块 Spec 与任务拆分
+### 步骤 1：模块提案与任务拆分
 
 > **提示词示例：**
 >
 > ```
-> /speckit.specify 为 QShop 编写「商品与分类」模块规格：
+> /opsx:propose 为 QShop 创建「商品与分类」模块变更提案（含规格、设计与任务）：
 > C 端：按分类浏览商品列表（分页+关键字搜索）、商品详情（含库存与销量，游客可看）
 > 管理端：分类 CRUD、商品 CRUD（名称/分类/价格/库存/主图/详情描述）、上架下架
 > 约束：删除均为逻辑删除；商品列表不返回下架商品；管理端操作需 product:write / category:write 权限
 > ```
 
-确认 spec 后执行 `/speckit.tasks` 拆分。
+提案生成后检查 tasks.md 的任务拆分。
 
-**检查要点**：确认 spec 写明「C 端列表过滤下架商品」——这是 C 端/管理端数据可见性差异的典型边界。
+**检查要点**：确认 delta 规格写明「C 端列表过滤下架商品」——这是 C 端/管理端数据可见性差异的典型边界。
 
 ### 步骤 2：C 端接口
 
 > **提示词示例：**
 >
 > ```
-> @specs/003-product/spec.md @modules/category @db/schema.sql
+> @openspec/changes（引用商品变更目录的提案与 delta 规格）@modules/category @db/schema.sql
 > 实现商品模块 C 端部分，参照 category 样板风格：
 > 1. GET /api/v1/products：分页查询，参数 page/size/categoryId/keyword，
 >    只返回上架(status=ON_SALE)且未删除的商品，按 created_at 倒序

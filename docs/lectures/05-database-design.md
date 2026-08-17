@@ -42,8 +42,8 @@ ER 建模思路 → 生成 DDL → 逐表审查 → 索引设计 → 执行建�
 > **提示词示例：**
 >
 > ```
-> @specs/001-qshop-core/spec.md @specs/001-qshop-core/plan.md
-> 请根据 QShop 的规格与方案做数据库建模：
+> @openspec/project.md @openspec/changes（找到 add-qshop-core 变更目录，引用其 proposal.md 与 design.md）
+> 请根据 QShop 的提案与设计做数据库建模：
 > 1. 列出所有实体及关系（用户、角色、权限、分类、商品、地址、订单、订单明细、支付）
 > 2. 说明哪些是多对多关系、如何用中间表表达
 > 3. 说明订单为什么需要冗余商品快照

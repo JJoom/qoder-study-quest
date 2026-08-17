@@ -29,7 +29,7 @@ export default defineConfig({
         items: [
           { text: '01 AI 编程是什么 + Qoder 初体验', link: '/lectures/01-ai-dev-and-qoder-intro' },
           { text: '02 Agent 生态概念扫盲', link: '/lectures/02-agent-ecosystem-concepts' },
-          { text: '03 Spec 驱动开发与 Spec Kit 实战', link: '/lectures/03-spec-kit-driven-development' }
+          { text: '03 Spec 驱动开发与 OpenSpec 实战', link: '/lectures/03-openspec-driven-development' }
         ]
       },
       {

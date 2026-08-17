@@ -11,7 +11,7 @@
 - 理解 AI 编程的本质：AI 是你的「结对程序员」，而不是「代码生成器」
 - 熟练使用 Qoder 的核心功能：对话、Agent 模式、上下文管理、Rules、Plan Mode
 - 理解 Agent 生态的核心概念：MCP、Skills、子 Agent、Harness
-- 掌握 Spec 驱动开发（SDD）方法论，并能使用 GitHub Spec Kit 落地
+- 掌握 Spec 驱动开发（SDD）方法论，并能使用开源轻量工具 OpenSpec 落地
 - 独立完成一个 Spring Boot + Vue 的企业级电商系统
 - 具备审查 AI 生成代码、识别 AI 幻觉的能力
 
@@ -45,13 +45,13 @@
 | --- | --- | --- |
 | [第 01 讲](./lectures/01-ai-dev-and-qoder-intro.md) | AI 编程是什么 + Qoder 初体验 | 与 AI 对话写代码、迭代修改、理解 AI 会犯错 |
 | [第 02 讲](./lectures/02-agent-ecosystem-concepts.md) | Agent 生态概念扫盲 | Agent、上下文、Rules、MCP、Skills、子 Agent、Harness 都是什么 |
-| [第 03 讲](./lectures/03-spec-kit-driven-development.md) | Spec 驱动开发与 Spec Kit 实战 | constitution → specify → plan → tasks → implement 五阶段流程 |
+| [第 03 讲](./lectures/03-openspec-driven-development.md) | Spec 驱动开发与 OpenSpec 实战 | propose → apply → sync/archive 完整流程与 delta 增量规格 |
 
 ### 第二部分：项目启动与后端核心（第 4-10 讲）
 
 | 讲次 | 主题 | 你将学会 |
 | --- | --- | --- |
-| [第 04 讲](./lectures/04-requirements-and-project-setup.md) | 需求分析与项目启动 | 用 Spec Kit 写宪法和规格书、初始化工程、配置 Rules |
+| [第 04 讲](./lectures/04-requirements-and-project-setup.md) | 需求分析与项目启动 | 用 OpenSpec 写项目约定与首个提案、初始化工程、配置 Rules |
 | [第 05 讲](./lectures/05-database-design.md) | 数据库设计 | 用 AI 做 ER 建模、生成 DDL、设计索引 |
 | [第 06 讲](./lectures/06-architecture-and-scaffolding.md) | 分层架构与工程脚手架 | 分层架构、统一响应体、全局异常处理 |
 | [第 07 讲](./lectures/07-auth-and-rbac.md) | 认证与 RBAC 权限 | Spring Security + JWT、用户角色权限模型 |
@@ -88,10 +88,10 @@
 | Redis | 6.x+（Windows 可用 Docker 版） | 缓存与购物车存储 | 第 09 讲起 |
 | Node.js | 18+ | 运行 Vue 前端 | 第 11 讲起 |
 | Git | 任意较新版本 | 版本控制 | 第 04 讲起 |
-| Python + uv | Python 3.11+，uv 最新版 | 安装 Spec Kit CLI | 第 03 讲起 |
+| OpenSpec CLI | Node.js 20.19+，`@fission-ai/openspec` 最新版 | Spec 驱动开发工具 | 第 03 讲起 |
 | Docker | 任意较新版本（可选） | 容器化部署 | 第 16 讲 |
 
-> 提示：暂时没装 MySQL、Redis、Node.js 也没关系，课程前半部分（第 1-3 讲）只需要 Qoder 和 JDK 即可开始。
+> 提示：暂时没装 MySQL、Redis 也没关系，课程前半部分（第 1-3 讲）只需要 Qoder 和 Node.js 即可开始。
 
 ## 每讲的学习方法
 

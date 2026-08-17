@@ -66,12 +66,12 @@ PAID   ──退款────> REFUNDED
 
 > 前置：确保本地 Redis 已启动（`redis-cli ping` 返回 PONG）。
 
-### 步骤 1：模块 Spec
+### 步骤 1：模块提案
 
 > **提示词示例：**
 >
 > ```
-> /speckit.specify 为 QShop 编写「购物车与订单」模块规格：
+> /opsx:propose 为 QShop 创建「购物车与订单」模块变更提案（含规格、设计与任务）：
 > 购物车（Redis 存储）：加购（同一商品累加数量）、修改数量（最小 1）、删除、查询（含商品最新价格与库存状态）；购物车数据与登录用户绑定
 > 订单：从购物车勾选商品下单 → 生成订单号、地址快照、商品快照、总金额，状态 UNPAID；下单后从购物车移除已购商品
 > 订单查询：我的订单列表（分页+按状态筛选）、订单详情（仅本人可见）
@@ -79,14 +79,14 @@ PAID   ──退款────> REFUNDED
 > 本讲不处理库存扣减与支付（第 10 讲），下单逻辑预留库存校验接入点
 > ```
 
-**检查要点**：确认「订单详情仅本人可见」写进了验收标准——越权查看他人订单是电商高频漏洞。
+**检查要点**：确认「订单详情仅本人可见」写进了 delta 规格的行为要求——越权查看他人订单是电商高频漏洞。
 
 ### 步骤 2：购物车接口
 
 > **提示词示例：**
 >
 > ```
-> @specs/004-cart-order/spec.md @modules/category
+> @openspec/changes（引用购物车与订单变更目录的 delta 规格）@modules/category
 > 实现购物车模块 modules/cart（参照样板风格，Redis 用 Spring Data Redis 的 StringRedisTemplate）：
 > 1. POST /api/v1/cart/items：加购 {productId, quantity}，校验商品存在且上架，数量上限 99
 > 2. PUT /api/v1/cart/items/{productId}：修改数量
@@ -157,7 +157,7 @@ PAID   ──退款────> REFUNDED
 > 1. GET /api/v1/orders：我的订单分页列表，参数 page/size/status
 > 2. GET /api/v1/orders/{orderNo}：详情，订单不属于当前用户返回 404（不要返回 403，避免暴露订单存在性）
 > 3. PUT /api/v1/orders/{orderNo}/cancel：取消订单
-> 按 spec 中的"状态×动作"矩阵实现流转校验，非法流转抛 BusinessException(ORDER_STATUS_INVALID)，
+> 按提案 delta 规格中的"状态×动作"矩阵实现流转校验，非法流转抛 BusinessException(ORDER_STATUS_INVALID)，
 > 用枚举 + 状态流转方法集中管理规则，不要把 if 判断散落各处。
 > ```
 

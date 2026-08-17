@@ -1,6 +1,6 @@
 # 第 07 讲 · 认证与 RBAC 权限
 
-> 本讲为 QShop 装上大门与门禁：用户注册登录（JWT 令牌）+ 基于角色的访问控制（RBAC）。同时从本讲开始，每个核心模块按 Spec Kit 节奏推进：先写模块规格，再拆任务，后实现。
+> 本讲为 QShop 装上大门与门禁：用户注册登录（JWT 令牌）+ 基于角色的访问控制（RBAC）。同时从本讲开始，每个核心模块按 OpenSpec 节奏推进：先提交变更提案（含规格、设计与任务），再逐任务实现，完成后归档。
 
 ## 1. 学习目标与本讲地图
 
@@ -8,7 +8,7 @@
 
 - [ ] 解释 JWT 的工作原理（为什么服务器可以「无状态」认出你）
 - [ ] 说清 RBAC 模型：用户 → 角色 → 权限三层关系
-- [ ] 用 Spec Kit 走一遍「模块级」规格流程
+- [ ] 用 OpenSpec 走一遍「模块级」提案流程
 - [ ] 实现注册、登录接口与 JWT 过滤器，并逐层审查安全代码
 - [ ] 用注解控制接口权限（普通用户 vs 管理员）
 
@@ -53,12 +53,12 @@ admin        ROLE_ADMIN     product:write, user:manage ...
 
 ## 4. 分步实战
 
-### 步骤 1：模块级 Spec（Spec Kit 节奏从本讲开始）
+### 步骤 1：模块级提案（OpenSpec 节奏从本讲开始）
 
 > **提示词示例：**
 >
 > ```
-> /speckit.specify 为 QShop 编写「认证与权限」模块规格：
+> /opsx:propose 为 QShop 创建「认证与权限」模块变更提案（含规格、设计与任务）：
 > - 注册：用户名+密码，用户名唯一校验（错误码 10003），注册成功自动赋予 ROLE_USER
 > - 登录：成功返回 JWT（有效期 2 小时）与用户信息；失败返回 401
 > - 鉴权：除注册/登录/商品浏览外，其余接口需携带 JWT
@@ -66,19 +66,19 @@ admin        ROLE_ADMIN     product:write, user:manage ...
 > - 退出：JWT 加入 Redis 黑名单直至自然过期
 > ```
 
-**预期产出**：`specs/002-auth/spec.md`。
+**预期产出**：`openspec/changes/add-auth/`（或类似名称），含 proposal.md、design.md、tasks.md 与 delta 规格。
 
-**检查要点**：确认「未登录访问受保护接口返回 401」「无权限返回 403」两条验收标准存在——这是 AI 最容易漏写的边界。
+**检查要点**：确认 delta 规格中存在「未登录访问受保护接口返回 401」「无权限返回 403」两条行为要求——这是 AI 最容易漏写的边界。
 
-随后执行 `/speckit.tasks` 拆分任务，预期得到类似清单：用户注册 → 登录签发 JWT → JWT 过滤器 → 权限注解接入 → 退出黑名单。
+tasks.md 会随提案一起生成，检查任务拆分是否合理，预期得到类似清单：用户注册 → 登录签发 JWT → JWT 过滤器 → 权限注解接入 → 退出黑名单。
 
 ### 步骤 2：实现注册与登录
 
 > **提示词示例：**
 >
 > ```
-> @specs/002-auth/spec.md @modules/category
-> 按 spec 实现认证模块 modules/auth 与用户模块 modules/user 的相关部分，参照 category 样板风格：
+> @openspec/changes（引用 add-auth 变更目录的提案与 delta 规格）@modules/category
+> 按提案实现认证模块 modules/auth 与用户模块 modules/user 的相关部分，参照 category 样板风格：
 > 1. POST /api/v1/auth/register：入参 RegisterDTO（username/password 带校验注解），
 >    密码 BCrypt 加密存储，写入 user 表并关联 ROLE_USER
 > 2. POST /api/v1/auth/login：校验通过后签发 JWT（载荷：userId、username、角色码列表），
@@ -151,7 +151,7 @@ admin        ROLE_ADMIN     product:write, user:manage ...
 
 1. **Boot 3 配 Boot 2 的 Security 写法**：`WebSecurityConfigurerAdapter`、`antMatchers` 都是 Boot 2 时代 API，Boot 3 应为 `SecurityFilterChain` + `requestMatchers`。这是认证模块最高频的幻觉。
 2. **JWT 载荷塞敏感信息**：检查载荷里有没有 password、手机号。
-3. **过滤器放行过宽**：例如把 `/api/v1/**` 整个放行。对照 spec 的放行清单逐一核对。
+3. **过滤器放行过宽**：例如把 `/api/v1/**` 整个放行。对照提案的放行清单逐一核对。
 4. **密码比较用 equals**：必须 `passwordEncoder.matches(输入, 密文)`。
 5. **权限注解写了但没开启 @EnableMethodSecurity**：注解形同虚设，用「普通用户访问管理接口」实测验证。
 
@@ -160,7 +160,7 @@ admin        ROLE_ADMIN     product:write, user:manage ...
 1. 实现退出登录接口 `POST /api/v1/auth/logout`：把当前 JWT 加入 Redis 黑名单（key 可用 token 的哈希），验证退出后旧 token 立即失效
 2. 给 `GET /api/v1/addresses` 加上「需登录」保护，实测无 token 返回 401
 3. 让 AI 解释 JwtAuthenticationFilter 的每一行代码（选中代码提问），直到你能独立讲清整个认证链路
-4. 更新 specs/002-auth/spec.md：把「退出登录」补充进规格——练习文档先行
+4. 更新提案：把「退出登录」补充进 delta 规格——练习文档先行；模块完成后用 `/opsx:archive` 归档，让主规格沉淀认证能力的行为契约
 5. Git 提交：`feat: 认证与 RBAC 权限`
 
 ## 7. 验收标准清单
