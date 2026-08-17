@@ -64,7 +64,7 @@ PAID   ──退款────> REFUNDED
 
 ## 4. 分步实战
 
-> 前置：确保本地 Redis 已启动（`redis-cli ping` 返回 PONG）。
+> 前置：确保本地 Redis 已启动。验证：终端执行 `redis-cli ping`，返回 `PONG` 即正常；提示命令找不到或连接拒绝，说明 Redis 没装或没启动，对照[环境准备手册](../environment-setup.md)第 8 节处理（Docker 方式记得先启动 Docker Desktop）。
 
 ### 步骤 1：模块提案
 

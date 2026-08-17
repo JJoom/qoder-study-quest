@@ -81,7 +81,7 @@ QShop 的标准答案已沉淀在课程的 [项目规格书](../project-spec.md)
 openspec init
 ```
 
-> 交互式选择 AI 工具时有 Qoder 就选 Qoder，没有就选 Generic（生成通用 AGENTS.md，Qoder 读取后同样能遵循流程）。
+> 交互式选择 AI 工具时**建议选 Generic**（原因与 Qoder 集成的已知坑见第 03 讲 5.3 节）。
 
 然后编辑 `openspec/project.md`，写入项目不可逾越的原则（相当于项目「宪法」）：
 
@@ -150,6 +150,16 @@ openspec init
 **检查要点**：让 AI 复述当前生效的规则，确认 Rules 已被加载。
 
 ### 步骤 5：初始化 Spring Boot 工程
+
+动手前先验证后端环境（本讲首次用到 JDK/Maven/Git，未安装先看[环境准备手册](../environment-setup.md)第 4-6 节）：
+
+```powershell
+java -version    # 预期包含 17.x
+mvn -v           # 预期 Apache Maven 3.x 且 Java version: 17
+git --version    # 预期 git version 2.x
+```
+
+三项都通过再继续；任何一项报错，对照环境准备手册对应小节排查。
 
 > **提示词示例：**
 >

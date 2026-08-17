@@ -61,7 +61,7 @@
 
 **预期产出**：`modules/product/` 全套分层代码。
 
-**验证**：用 HTTP 工具访问 `GET /api/v1/products?page=1&size=3`，确认返回种子商品且结构符合规范。
+**验证**：用 HTTP 工具（第 06 讲教过）访问 `GET /api/v1/products?page=1&size=3`，确认返回种子商品且结构符合规范。
 
 **检查要点**：
 

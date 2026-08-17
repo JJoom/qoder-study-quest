@@ -32,6 +32,7 @@
 | specs（主规格） | 系统当前行为的「真相源」，按功能域存放，随变更不断生长 |
 | archive（归档） | 变更完成后把它移入历史目录，变更内容合并进主规格 |
 | AGENTS.md | 「写给 AI 看的 README」：告诉 AI 如何读规格、如何走流程 |
+| 斜杠命令不显示 | 在 Qoder 中敲不出 `/opsx:xxx` 时，先查命令文件名是否符合 Qoder 命名规则（仅小写字母/数字/`-`/`_`），见 5.3 节排查指引 |
 | Plan Mode（计划模式） | Qoder 内置功能：AI 先出实施方案，你确认后才动手改代码 |
 
 ## 3. 为什么需要 Spec 驱动开发：一个翻车案例
@@ -103,7 +104,9 @@ cd openspec-demo
 openspec init
 ```
 
-初始化会交互式询问你的 AI 工具。列表中有 Qoder 就直接选；**没有就选 Generic**——它会生成通用的 AGENTS.md 指引，Qoder 读取后照样能完整遵循流程。
+初始化会交互式询问你的 AI 工具。**在 Qoder 中建议选 Generic**——它会生成通用的 AGENTS.md 指引，Qoder 读取后能完整遵循流程，且没有兼容问题。
+
+> 如果你选了 Qoder 集成，可能会踩到一个真实存在的坑：OpenSpec 的 Qoder 适配器生成的命令文件名形如 `OPSX: Propose`（含大写字母、冒号、空格），而 Qoder 的自定义指令命名规则只允许小写字母、数字、`-` 和 `_`，这些文件会被 Qoder 扫描跳过，导致 `/opsx:propose` 敲不出来。修复方法：把 `.qoder/commands/` 下 opsx 相关的命令文件逐个复制重命名为合规形式（如 `opsx/propose.md` → `opsx-propose.md`），并把文件头部 frontmatter 里的 `name` 字段同步改为 `opsx-propose`；嫌麻烦就改用 Generic 集成或自然语言触发（阶段 1 的小插曲里有示例）。
 
 初始化成功后，你会看到类似结构：
 
@@ -256,6 +259,7 @@ OpenSpec 适合完整功能的正式流程；日常小改动不必每次都提�
 4. **apply 时脱离规格自由发挥**。发现 AI 实现了规格里没有的功能，要求它删除——范围蔓延是企业项目失控的常见原因。
 5. **规格漂移（drift）**：OpenSpec 不强制代码与规格同步，AI 实现时偷偷改了行为，规格不会自动更新。对策：apply 阶段逐任务对照规格验收；怀疑漂移时用 `/opsx:verify` 检查一致性。
 6. **跳过 sync 直接归档**。归档不合并主规格，下个变更的 AI 就读不到系统现状，「防止破坏已有功能」的机制就失效了。归档时留意是否提示先 sync。
+7. **Qoder 里敲不出 `/opsx:xxx` 命令**。若在 init 时选了 Qoder 集成，大概率是命令文件名不符合 Qoder 命名规则（见 5.3 节）：改成 `opsx-propose.md` 这类合规名称并同步 frontmatter 的 name 字段，或改用 Generic/自然语言触发。
 
 ## 9. 课后练习任务
 

@@ -12,6 +12,7 @@ export default defineConfig({
   themeConfig: {
     nav: [
       { text: '课程总览', link: '/' },
+      { text: '环境准备手册', link: '/environment-setup' },
       { text: '项目规格书', link: '/project-spec' },
       { text: '讲义目录', link: '/lectures/01-ai-dev-and-qoder-intro' }
     ],
@@ -21,6 +22,7 @@ export default defineConfig({
         text: '课程入口',
         items: [
           { text: '课程总览', link: '/' },
+          { text: '环境准备手册', link: '/environment-setup' },
           { text: 'QShop 项目规格书', link: '/project-spec' }
         ]
       },

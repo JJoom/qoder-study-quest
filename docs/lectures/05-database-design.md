@@ -118,9 +118,19 @@ order ──< payment
 
 ### 步骤 5：执行建库
 
+**先选一种操作数据库的方式**（未安装 MySQL 先看[环境准备手册](../environment-setup.md)第 7 节）：
+
+- **命令行**（下面演示的方式）：不装额外工具，但看数据不直观
+- **图形客户端**（新手推荐）：DBeaver（免费）或 Navicat，新建连接（host=localhost、端口 3306、用户 root、密码是你安装时设的）后，用「打开 SQL 文件 → 全部执行」导入 schema.sql，后面看表结构、查数据都方便得多
+
+命令行方式执行建库脚本：
+
 ```powershell
-mysql -u root -p < qshop-server/src/main/resources/db/schema.sql
+cd qshop-server\src\main\resources\db
+Get-Content schema.sql -Encoding UTF8 | mysql -u root -p --default-character-set=utf8mb4
 ```
+
+> 注意：PowerShell 不支持 `<` 重定向符，网上的 `mysql -u root -p < xxx.sql` 写法直接抄会报错，要用上面 `Get-Content | mysql` 的管道写法。
 
 验证：
 

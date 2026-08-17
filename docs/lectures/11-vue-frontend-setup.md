@@ -50,6 +50,7 @@
 
 ```powershell
 cd qshop-web
+npm install    # 下载项目依赖到 node_modules 目录，首次安装需要几分钟，属于正常现象
 npm run dev
 ```
 
