@@ -68,7 +68,7 @@ WHERE id = #{id} AND version = #{oldVersion} AND stock >= #{qty}
 > **提示词示例：**
 >
 > ```
-> /specify 为 QShop 编写「支付与库存」模块规格：
+> /speckit.specify 为 QShop 编写「支付与库存」模块规格：
 > 库存：下单时校验并扣减库存（乐观锁），失败返回错误码 10001 且订单整体回滚；取消订单时回补库存
 > 支付：模拟支付——创建支付单（payment 表，payment_no 前缀 P）；提供"模拟支付成功"接口模拟渠道回调；
 > 回调幂等：重复调用不产生副作用；支付成功后订单 UNPAID→PAID、商品销量累加

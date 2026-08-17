@@ -31,6 +31,7 @@
 | plan | 阶段名：根据规格制定技术实现方案 |
 | tasks | 阶段名：把方案拆成一个个可执行的小任务 |
 | implement | 阶段名：按任务清单逐个实现代码 |
+| 斜杠命令 | 在 AI 对话里触发动作的指令，Spec Kit 的命令形如 `/speckit.xxx`（旧版为 `/xxx`，本课程按新版写法） |
 | 工件（Artifact） | 流程产出的文档文件（本讲里都是 Markdown），作为下一阶段的输入 |
 | Plan Mode（计划模式） | Qoder 内置功能：AI 先出实施方案，你确认后才动手改代码 |
 
@@ -104,10 +105,10 @@ specify --help
 ```powershell
 mkdir sdd-demo
 cd sdd-demo
-specify init . --ai qoder
+specify init . --integration qoder
 ```
 
-> 说明：`--ai` 指定与你使用的 AI 工具集成。若你的 Spec Kit 版本没有 `qoder` 选项，使用 `--ai generic`（通用集成，适配任何工具）。初始化完成后查看生成的目录结构，重点是 `.specify/` 目录（存放模板与脚本）和各阶段的命令文件。
+> 说明：`--integration` 指定与你使用的 AI 工具集成，Qoder 在官方支持列表中。你也可以直接执行 `specify init .` 交互式选择集成；若你的版本实在不支持 qoder，用通用集成兜底：`specify init . --integration generic --integration-options="--commands-dir .speckit-commands"`。初始化完成后查看生成的目录结构，重点是 `.specify/` 目录（存放模板与脚本）和各阶段的命令文件。
 
 初始化成功后，你会在项目中看到类似结构：
 
@@ -130,7 +131,7 @@ sdd-demo/
 > **指令示例：**
 >
 > ```
-> /constitution 为这个命令行待办清单项目制定宪法。核心原则：
+> /speckit.constitution 为这个命令行待办清单项目制定宪法。核心原则：
 > 1. Python 3.11+，不引入 Web 框架，只做命令行工具
 > 2. 数据持久化用本地 JSON 文件，不引入数据库
 > 3. 所有对外函数必须有单元测试
@@ -150,7 +151,7 @@ sdd-demo/
 > **指令示例：**
 >
 > ```
-> /specify 我要开发一个命令行待办清单工具，用户故事如下：
+> /speckit.specify 我要开发一个命令行待办清单工具，用户故事如下：
 > 1. 作为用户，我可以添加待办事项（带标题，可选截止日期）
 > 2. 作为用户，我可以查看待办列表，区分"未完成/已完成/已过期"
 > 3. 作为用户，我可以把某个待办标记为完成
@@ -172,7 +173,7 @@ sdd-demo/
 > **指令示例：**
 >
 > ```
-> /plan 技术栈约束：Python 3.11+ 标准库为主，参数解析用 argparse，数据存 data/todos.json。请基于 spec.md 制定实现计划。
+> /speckit.plan 技术栈约束：Python 3.11+ 标准库为主，参数解析用 argparse，数据存 data/todos.json。请基于 spec.md 制定实现计划。
 > ```
 
 **预期产出**：`specs/001-xxx/plan.md`（技术方案）以及配套的技术上下文文档，内容包括技术选型、数据模型设计、项目结构、与宪法的一致性检查结论。
@@ -188,7 +189,7 @@ sdd-demo/
 > **指令示例：**
 >
 > ```
-> /tasks 请基于 plan 拆分为可逐个实现和验证的任务清单。
+> /speckit.tasks 请基于 plan 拆分为可逐个实现和验证的任务清单。
 > ```
 
 **预期产出**：`specs/001-xxx/tasks.md`——一份编号任务清单，例如：
@@ -212,7 +213,7 @@ sdd-demo/
 > **指令示例（先只做第一个任务）：**
 >
 > ```
-> /implement 请实现 T001。
+> /speckit.implement 请实现 T001。
 > ```
 
 **预期产出**：AI 按照 tasks.md 中 T001 的描述生成代码，并更新 tasks.md 中该任务的状态。
@@ -229,6 +230,19 @@ sdd-demo/
 constitution（宪法）→ specify（规格）→ plan（方案）→ tasks（任务）→ implement（实现）
      原则               做什么          怎么做         分成几步         一步步做
 ```
+
+### 新版 Spec Kit 的质量门禁（可选增强）
+
+新版 Spec Kit 在五阶段之外还提供了四个可选命令，像生产线上的质检工位，适合正式项目（如后面的 QShop）按需使用：
+
+| 命令 | 作用 | 何时用 |
+| --- | --- | --- |
+| `/speckit.clarify` | 针对规格里模糊的地方主动提问，并把你的回答合入规格 | specify 之后、plan 之前；需求拿不准时 |
+| `/speckit.checklist` | 生成一份需求质量检查清单（给需求做「单元测试」） | 重要功能开工前，逐项确认规格完整清晰 |
+| `/speckit.analyze` | 检查 spec/plan/tasks 三份文档之间的矛盾与缺口（只读） | tasks 之后、implement 之前 |
+| `/speckit.converge` | 对照规格检查代码完成度，发现缺口自动补任务 | implement 之后，确认「真的做完了」 |
+
+本讲的 Todo 演练只用基础五阶段即可；第 04 讲起的 QShop 项目中，建议至少在模块规格后顺手用一次 `/speckit.clarify`。
 
 ## 7. Qoder Plan Mode：轻量版的「先方案后施工」
 

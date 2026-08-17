@@ -78,17 +78,17 @@ QShop 的标准答案已沉淀在课程的 [项目规格书](../project-spec.md)
 在 `qshop/` 目录执行：
 
 ```powershell
-specify init . --ai qoder
+specify init . --integration qoder
 ```
 
-> 若版本不支持 `qoder`，用 `--ai generic`。
+> 若版本不支持 `qoder`，用交互式选择（直接 `specify init .`）或 `--integration generic --integration-options="--commands-dir .speckit-commands"`。
 
 然后在对话中：
 
 > **提示词示例：**
 >
 > ```
-> /constitution 为 QShop 电商系统制定项目宪法：
+> /speckit.constitution 为 QShop 电商系统制定项目宪法：
 > 1. 单体架构，禁止引入微服务组件（网关、注册中心、配置中心等）
 > 2. 后端 Spring Boot 3.x + JDK 17 + MyBatis-Plus + MySQL 8 + Redis，前端 Vue 3 + Element Plus
 > 3. 分层架构：Controller 只做参数校验与转发，业务逻辑全部在 Service
@@ -107,7 +107,7 @@ specify init . --ai qoder
 > **提示词示例：**
 >
 > ```
-> /specify 基于我们刚才澄清的需求，为 QShop 编写总体功能规格：
+> /speckit.specify 基于我们刚才澄清的需求，为 QShop 编写总体功能规格：
 > 角色：游客、注册用户、管理员。
 > 功能域：认证、商品浏览（分类/列表/详情）、购物车、订单、模拟支付、后台管理（商品/分类/用户）、RBAC。
 > 请输出每个功能域的用户故事与验收标准，并明确列出本期不做的事项。
@@ -125,7 +125,7 @@ specify init . --ai qoder
 > **提示词示例：**
 >
 > ```
-> /plan 技术栈已在宪法中锁定。请制定 QShop 的总体技术方案：
+> /speckit.plan 技术栈已在宪法中锁定。请制定 QShop 的总体技术方案：
 > 后端模块划分（user/auth/category/product/cart/order/payment）、
 > 数据模型概览（需要哪些表）、API 规范（统一前缀 /api/v1、统一响应体、分页规范）、
 > 认证方案（JWT）、前后端交互方式（REST + JSON）。
