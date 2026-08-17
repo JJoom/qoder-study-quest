@@ -151,10 +151,10 @@ tasks.md 会随提案一起生成，检查任务拆分是否合理，预期得�
 
 ## 6. 课后练习任务
 
-1. 实现退出登录接口 `POST /api/v1/auth/logout`：把当前 JWT 加入 Redis 黑名单（key 可用 token 的哈希），验证退出后旧 token 立即失效
+1. 验证退出登录功能（退出任务应已随 tasks 实现；若未覆盖，用 `/opsx:apply` 补实现 POST /api/v1/auth/logout）：退出后旧 token 应立即失效（Redis 黑名单），实测确认
 2. 给 `GET /api/v1/addresses` 加上「需登录」保护，实测无 token 返回 401
 3. 让 AI 解释 JwtAuthenticationFilter 的每一行代码（选中代码提问），直到你能独立讲清整个认证链路
-4. 更新提案：把「退出登录」补充进 delta 规格——练习文档先行；模块完成后用 `/opsx:archive` 归档，让主规格沉淀认证能力的行为契约
+4. 文档先行练习：给模块加一个小新需求（如「登录支持记住我，JWT 有效期延长到 7 天」）——先把它补进提案与 delta 规格，再用 `/opsx:apply` 实现；全部完成后用 `/opsx:archive` 归档模块，让主规格沉淀认证能力的行为契约
 5. Git 提交：`feat: 认证与 RBAC 权限`
 
 ## 7. 验收标准清单

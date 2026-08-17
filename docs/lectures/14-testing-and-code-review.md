@@ -103,7 +103,7 @@ mvn test -Dtest=OrderServiceTest
 
 两种评审方式都体验一遍：
 
-**方式一：代码评审子 Agent**。在 Qoder 中发起代码评审（CodeReview 子 Agent），范围选择本讲之前的全部改动。
+**方式一：代码评审子 Agent**。在 Qoder 中发起代码评审（CodeReview 子 Agent），评审范围选择本讲之前的全部提交（在评审入口指定 Git 范围即可，不指定时默认只审当前会话的改动）。
 
 **方式二：社区热门 Skills**。使用 find-skills 搜索代码评审/提交类技能（例如 commit 规范类技能），安装一个体验：
 

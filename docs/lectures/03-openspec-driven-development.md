@@ -98,6 +98,8 @@ openspec --version
 
 本讲用一个小型演练项目走完整流程：**命令行待办清单（Todo CLI）**——麻雀虽小五脏俱全。
 
+> 为什么不直接拿 QShop 练？先用一个十几分钟的小项目把流程跑通——踩坑也只踩十几分钟的坑；流程熟了再上真项目，失败成本完全不同。这也是全课程「小步快跑」原则的体现。
+
 ```powershell
 mkdir openspec-demo
 cd openspec-demo
