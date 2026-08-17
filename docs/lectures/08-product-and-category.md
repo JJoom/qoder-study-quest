@@ -39,24 +39,25 @@
 > C 端：按分类浏览商品列表（分页+关键字搜索）、商品详情（含库存与销量，游客可看）
 > 管理端：分类 CRUD、商品 CRUD（名称/分类/价格/库存/主图/详情描述）、上架下架
 > 约束：删除均为逻辑删除；商品列表不返回下架商品；管理端操作需 product:write / category:write 权限
+> 接口与技术约束（写入 design.md）：
+> - C 端列表 GET /api/v1/products：参数 page/size/categoryId/keyword，只返回 ON_SALE 且未删除商品，created_at 倒序；分页响应 {records,total,page,size}；keyword 必须参数绑定，禁止拼接 SQL
+> - C 端详情 GET /api/v1/products/{id}：不存在或已下架返回 404；ProductVO 只含前端需要字段
+> - 管理端商品：POST 新增 / PUT /{id} 修改（名称非空、价格>0、库存>=0、分类存在），PUT /{id}/status 上下架（ON_SALE/OFF_SALE），DELETE /{id} 逻辑删除，GET 列表可按状态筛选
+> - 管理端分类：CRUD（category:write 权限）
+> - 上传 POST /api/v1/admin/upload：仅 jpg/png/webp、≤2MB、后缀白名单校验、UUID 重命名存 upload/，静态资源映射后 /files/** 可访问
+> - 实现风格参照 modules/category 样板
 > ```
 
-提案生成后检查 tasks.md 的任务拆分。
+**检查要点**：确认 delta 规格写明「C 端列表过滤下架商品」——这是 C 端/管理端数据可见性差异的典型边界；提案生成后检查 tasks.md 的任务拆分是否合理（一个任务 = 一次实现 + 一次验证）。
 
-**检查要点**：确认 delta 规格写明「C 端列表过滤下架商品」——这是 C 端/管理端数据可见性差异的典型边界。
+> 实现节奏与第 07 讲相同：需求已锁在提案里，后续实现由 tasks.md 驱动（`/opsx:apply`），实现时不再重复描述需求。
 
-### 步骤 2：C 端接口
+### 步骤 2：实现 C 端接口（任务驱动）
 
-> **提示词示例：**
+> **指令示例：**
 >
 > ```
-> @openspec/changes（引用商品变更目录的提案与 delta 规格）@modules/category @db/schema.sql
-> 实现商品模块 C 端部分，参照 category 样板风格：
-> 1. GET /api/v1/products：分页查询，参数 page/size/categoryId/keyword，
->    只返回上架(status=ON_SALE)且未删除的商品，按 created_at 倒序
-> 2. GET /api/v1/products/{id}：商品详情，商品不存在或已下架返回 404
-> 3. ProductVO 只包含前端需要的字段
-> 分页返回结构遵循项目规范：{records, total, page, size}
+> /opsx:apply 按 tasks.md 开始实现，先做 C 端商品列表与详情任务（@modules/category @db/schema.sql 参照样板与表结构）。一次只做一个任务，验证通过再继续。
 > ```
 
 **预期产出**：`modules/product/` 全套分层代码。
@@ -68,19 +69,15 @@
 - 分页参数是否走了 MyBatis-Plus 的 `Page<T>`，而不是自己 limit 拼 SQL
 - keyword 搜索是否用了参数绑定（`LIKE CONCAT('%', #{keyword}, '%')`），**绝不能字符串拼接 SQL**（注入风险）
 
-### 步骤 3：管理端 CRUD
+### 步骤 3：实现管理端 CRUD（继续任务驱动）
 
-> **提示词示例：**
+> **指令示例：**
 >
 > ```
-> 继续实现商品管理端（/api/v1/admin/products），权限注解 @PreAuthorize("hasAuthority('product:write')")：
-> 1. POST 新增：校验名称非空、价格>0、库存>=0、分类存在
-> 2. PUT /{id} 修改：同上校验，商品不存在返回 404
-> 3. PUT /{id}/status 上下架：入参 ON_SALE/OFF_SALE
-> 4. DELETE /{id} 逻辑删除
-> 5. GET 管理端列表：可见所有状态商品，支持按状态筛选
-> 同时为分类模块补齐管理端 CRUD（category:write 权限）。
+> /opsx:apply 继续实现 tasks.md 中的商品管理端与分类管理端任务。
 > ```
+
+提案里已写明校验规则与权限要求（名称非空、价格>0、库存>=0、分类存在、@PreAuthorize 注解），AI 实现时会自行读取。
 
 **预期产出**：管理端接口全套。
 
@@ -91,17 +88,15 @@
 - 修改接口是否先查再改（防止更新不存在记录时 affected rows=0 却返回成功）
 - 价格字段全链路 BigDecimal，搜索代码确认没有 double
 
-### 步骤 4：文件上传（商品主图）
+### 步骤 4：实现文件上传（继续任务驱动）
 
-> **提示词示例：**
+> **指令示例：**
 >
 > ```
-> 实现商品主图上传：
-> 1. POST /api/v1/admin/upload（需登录），接收 MultipartFile
-> 2. 校验：只允许 jpg/png/webp，大小不超过 2MB，用文件名后缀白名单判断
-> 3. 存储到本地 upload/ 目录，文件名用 UUID 重命名防覆盖，配置静态资源映射使其可通过 /files/** 访问
-> 4. 返回可访问的 URL
+> /opsx:apply 继续实现 tasks.md 中的商品主图上传任务。
 > ```
+
+安全约束（后缀白名单、≤2MB、UUID 重命名防路径穿越）已在提案中，重点审查实现是否真的遵守：
 
 **预期产出**：上传接口 + WebMvc 静态资源配置。
 
@@ -113,6 +108,8 @@
 - 存储文件名是 UUID 而非原始文件名（防止路径穿越如 `../../`）
 
 ### 步骤 5：接口文档（springdoc）
+
+这一步是项目级小配置，按第 03 讲的选择建议直接对话即可，不必走提案流程：
 
 > **提示词示例：**
 >

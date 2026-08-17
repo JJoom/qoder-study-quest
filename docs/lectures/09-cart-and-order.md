@@ -73,26 +73,29 @@ PAID   ──退款────> REFUNDED
 > ```
 > /opsx:propose 为 QShop 创建「购物车与订单」模块变更提案（含规格、设计与任务）：
 > 购物车（Redis 存储）：加购（同一商品累加数量）、修改数量（最小 1）、删除、查询（含商品最新价格与库存状态）；购物车数据与登录用户绑定
+> 地址管理：列表、新增、修改、删除、设为默认，所有操作必须校验地址属于当前用户
 > 订单：从购物车勾选商品下单 → 生成订单号、地址快照、商品快照、总金额，状态 UNPAID；下单后从购物车移除已购商品
 > 订单查询：我的订单列表（分页+按状态筛选）、订单详情（仅本人可见）
 > 订单取消：仅 UNPAID 可取消（错误码 10002 用于非法流转）
 > 本讲不处理库存扣减与支付（第 10 讲），下单逻辑预留库存校验接入点
+> 接口与技术约束（写入 design.md）：
+> - 购物车：POST /api/v1/cart/items 加购（商品存在且上架，数量上限 99）、PUT /api/v1/cart/items/{productId} 改数量、DELETE 删单项、GET /api/v1/cart（含商品最新名称/价格/图片/库存/上架状态）；Redis 结构 cart:user:{userId} Hash，field=productId，value 存 JSON，用 StringRedisTemplate
+> - 地址：GET /api/v1/addresses、POST 新增、PUT /{id} 修改、DELETE /{id} 删除、PUT /{id}/default 设默认（先取消原默认）；userId 一律从认证上下文获取
+> - 下单：POST /api/v1/orders 入参 {addressId, productIds[]}，校验地址归属与商品在购物车且上架；订单号 yyyyMMddHHmmss+6位随机数；总金额服务端 BigDecimal 重算；@Transactional 全部回滚
+> - 订单查询/取消：GET /api/v1/orders（page/size/status）、GET /{orderNo}（非本人返回 404）、PUT /{orderNo}/cancel；状态流转用枚举+流转方法集中管理
+> - 实现风格参照 modules/category 样板
 > ```
 
-**检查要点**：确认「订单详情仅本人可见」写进了 delta 规格的行为要求——越权查看他人订单是电商高频漏洞。
+**检查要点**：确认「订单详情仅本人可见」写进了 delta 规格的行为要求——越权查看他人订单是电商高频漏洞。提案生成后检查 tasks.md 拆分，预期包含购物车、地址、下单、订单查询/取消四批任务。
 
-### 步骤 2：购物车接口
+> 实现节奏与前两讲相同：需求已锁在提案里，后续实现由 tasks.md 驱动（`/opsx:apply`），实现时不再重复描述需求。
 
-> **提示词示例：**
+### 步骤 2：实现购物车接口（任务驱动）
+
+> **指令示例：**
 >
 > ```
-> @openspec/changes（引用购物车与订单变更目录的 delta 规格）@modules/category
-> 实现购物车模块 modules/cart（参照样板风格，Redis 用 Spring Data Redis 的 StringRedisTemplate）：
-> 1. POST /api/v1/cart/items：加购 {productId, quantity}，校验商品存在且上架，数量上限 99
-> 2. PUT /api/v1/cart/items/{productId}：修改数量
-> 3. DELETE /api/v1/cart/items/{productId}：删除单项
-> 4. GET /api/v1/cart：返回购物车列表，每项含商品最新名称/价格/图片/库存/上架状态
-> Redis key 设计：cart:user:{userId}，field=productId，value 存 JSON（数量+加入时间）
+> /opsx:apply 按 tasks.md 开始实现，先做购物车相关任务（@modules/category 参照样板风格）。一次只做一个任务，验证通过再继续。
 > ```
 
 **预期产出**：`modules/cart/` 代码。
@@ -104,20 +107,17 @@ PAID   ──退款────> REFUNDED
 - userId 必须从 JWT 认证上下文取，**绝不能信任前端传来的 userId**（越权红线）
 - 商品价格是否实时回查商品表，而不是存在购物车里
 
-### 步骤 3：地址管理接口（下单的前置条件）
+### 步骤 3：实现地址管理接口（继续任务驱动）
 
-下单需要 addressId，所以先把地址模块补上。这也是第 06 讲样板模块的一次完整复制练习：
+下单需要 addressId，所以先做地址这批任务（这也是第 06 讲样板模块的一次完整复制练习）：
 
-> **提示词示例：**
+> **指令示例：**
 >
 > ```
-> @db/schema.sql @modules/category 参照样板风格实现地址模块 modules/address（均需登录）：
-> 1. GET /api/v1/addresses：当前用户的地址列表
-> 2. POST /api/v1/addresses：新增地址（收件人、手机号、省市区、详细地址、是否默认）
-> 3. PUT /api/v1/addresses/{id} 修改、DELETE /api/v1/addresses/{id} 删除，均须校验地址属于当前用户
-> 4. PUT /api/v1/addresses/{id}/default 设为默认（先取消原默认，保证唯一）
-> 5. userId 一律从认证上下文获取，禁止信任入参
+> /opsx:apply 继续实现 tasks.md 中的地址管理任务。
 > ```
+
+归属校验与 userId 来源要求已在提案中，重点审查实现是否真的遵守。
 
 **预期产出**：`modules/address/` 全套代码。
 
@@ -125,19 +125,15 @@ PAID   ──退款────> REFUNDED
 
 **检查要点**：修改/删除/设默认是否都带归属校验——这是本讲「越权红线」的第一次落地，下一步的下单接口还会再次用到它，第 15 讲安全排查也会专门复测。
 
-### 步骤 4：下单接口
+### 步骤 4：实现下单接口（继续任务驱动）
 
-> **提示词示例：**
+> **指令示例：**
 >
 > ```
-> 实现下单接口 POST /api/v1/orders，入参 {addressId, productIds[]}：
-> 1. 校验地址属于当前用户；校验所选商品均在购物车、均上架
-> 2. 生成订单号（yyyyMMddHHmmss + 6位随机数）
-> 3. 写 order 主表：地址快照字段、总金额（用 BigDecimal 逐项累加）；写 order_item：商品快照（名称/图片/单价/数量）
-> 4. 状态 UNPAID；成功后从购物车移除已购商品
-> 5. 整个方法加 @Transactional，任何一步失败全部回滚
-> 6. 预留注释：库存校验与扣减在第 10 讲接入
+> /opsx:apply 继续实现 tasks.md 中的下单任务。
 > ```
+
+提案里已写明地址归属校验、快照、金额重算、事务与库存预留点（预留注释：库存校验与扣减在第 10 讲接入），AI 实现时会自行读取。
 
 **预期产出**：`modules/order/` 下单链路代码。
 
@@ -149,17 +145,15 @@ PAID   ──退款────> REFUNDED
 - 总金额是服务端用「单价 × 数量」重新计算的，**绝不能信任前端传来的总价**
 - 订单号唯一性冲突时的处理（重试或报错），而不是静默吞掉
 
-### 步骤 5：订单查询与取消（状态机落地）
+### 步骤 5：实现订单查询与取消（继续任务驱动，状态机落地）
 
-> **提示词示例：**
+> **指令示例：**
 >
 > ```
-> 1. GET /api/v1/orders：我的订单分页列表，参数 page/size/status
-> 2. GET /api/v1/orders/{orderNo}：详情，订单不属于当前用户返回 404（不要返回 403，避免暴露订单存在性）
-> 3. PUT /api/v1/orders/{orderNo}/cancel：取消订单
-> 按提案 delta 规格中的"状态×动作"矩阵实现流转校验，非法流转抛 BusinessException(ORDER_STATUS_INVALID)，
-> 用枚举 + 状态流转方法集中管理规则，不要把 if 判断散落各处。
+> /opsx:apply 继续实现 tasks.md 中的订单查询与取消任务。
 > ```
+
+重点审查状态流转是否按提案中「状态×动作」矩阵实现：非法流转抛 BusinessException(ORDER_STATUS_INVALID)，规则用枚举 + 状态流转方法集中管理，if 判断不散落各处。
 
 **预期产出**：订单查询与取消接口 + 集中的状态流转逻辑。
 

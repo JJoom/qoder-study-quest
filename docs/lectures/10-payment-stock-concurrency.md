@@ -73,20 +73,26 @@ WHERE id = #{id} AND version = #{oldVersion} AND stock >= #{qty}
 > 支付：模拟支付——创建支付单（payment 表，payment_no 前缀 P）；提供"模拟支付成功"接口模拟渠道回调；
 > 回调幂等：重复调用不产生副作用；支付成功后订单 UNPAID→PAID、商品销量累加
 > 明确并发约束：同一商品并发下单不得超卖（这是验收标准）
+> 技术约束（写入 design.md）：
+> - product 表新增 version INT NOT NULL DEFAULT 0（提供 ALTER 语句并同步更新 schema.sql）；Product 实体 version 字段加 @Version，MybatisPlusConfig 注册 OptimisticLockerInnerInterceptor
+> - 库存扣减用条件更新（version + stock >= 数量双条件），影响行数=0 抛 BusinessException(STOCK_NOT_ENOUGH)；取消回补同样用条件更新
+> - 支付：POST /api/v1/payments 对 UNPAID 订单创建支付单（返回 payment_no）；POST /api/v1/payments/{paymentNo}/mock-callback 模拟回调（幂等键可用 paymentNo）；回调处理同一事务：幂等检查 → 支付单 PAID → 订单 UNPAID→PAID → 销量累加；重复回调直接返回成功
+> - 状态流转复用第 09 讲的状态机组件，不新写一套 if
 > ```
 
 **检查要点**：「并发下单不得超卖」必须出现在 delta 规格的行为要求里——它是本讲的测试靶子。
 
-### 步骤 2：表结构变更 + 乐观锁配置
+> 实现节奏与前几讲相同：需求与技术约束已锁在提案里，后续实现由 tasks.md 驱动（`/opsx:apply`）。
 
-> **提示词示例：**
+### 步骤 2：实现表结构变更与乐观锁（任务驱动）
+
+> **指令示例：**
 >
 > ```
-> 1. 生成 ALTER 语句：product 表增加 version INT NOT NULL DEFAULT 0（同步更新 schema.sql）
-> 2. Product 实体的 version 字段加 MyBatis-Plus @Version 注解
-> 3. MybatisPlusConfig 注册 OptimisticLockerInnerInterceptor
-> 4. 实现库存扣减方法：带 stock >= 数量的更新条件，失败抛 BusinessException(STOCK_NOT_ENOUGH)
+> /opsx:apply 按 tasks.md 开始实现，先做表结构变更、乐观锁配置与库存扣减任务。
 > ```
+
+技术方案细节（ALTER 语句、@Version、拦截器、双条件更新）已在提案 design.md 中，重点审查实现是否真的遵守：
 
 **预期产出**：迁移 SQL + 实体注解 + 插件注册 + 扣减逻辑。
 
@@ -115,18 +121,15 @@ WHERE id = #{id} AND version = #{oldVersion} AND stock >= #{qty}
 
 这个「先复现问题，再验证修复」的流程，是并发问题的标准验证方法。**如果 AI 的方案没法通过并发测试，把测试失败结果贴回给它迭代**——测试即提示词。
 
-### 步骤 4：模拟支付链路
+### 步骤 4：实现模拟支付链路（继续任务驱动）
 
-> **提示词示例：**
+> **指令示例：**
 >
 > ```
-> @openspec/changes（引用支付与库存变更目录的提案与 delta 规格）实现模拟支付：
-> 1. POST /api/v1/payments：对 UNPAID 订单创建支付单，返回 payment_no 与"模拟支付页"信息
-> 2. POST /api/v1/payments/{paymentNo}/mock-callback：模拟渠道回调"支付成功"，
->    入参带幂等键（可用 paymentNo 本身）
-> 3. 回调处理（@Transactional）：幂等检查 → 更新支付单 PAID → 订单 UNPAID→PAID → 商品销量累加
-> 4. 重复调用回调：第二次起直接返回成功，不重复流转
+> /opsx:apply 继续实现 tasks.md 中的支付与回调任务。
 > ```
+
+提案里已写明支付单创建、mock 回调、幂等与同事务要求，重点审查：
 
 **预期产出**：`modules/payment/` 代码。
 

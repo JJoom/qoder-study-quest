@@ -59,11 +59,18 @@ admin        ROLE_ADMIN     product:write, user:manage ...
 >
 > ```
 > /opsx:propose 为 QShop 创建「认证与权限」模块变更提案（含规格、设计与任务）：
-> - 注册：用户名+密码，用户名唯一校验（错误码 10003），注册成功自动赋予 ROLE_USER
-> - 登录：成功返回 JWT（有效期 2 小时）与用户信息；失败返回 401
-> - 鉴权：除注册/登录/商品浏览外，其余接口需携带 JWT
-> - 授权：/api/v1/admin/** 仅管理员可访问
+> 功能需求：
+> - 注册：POST /api/v1/auth/register，用户名+密码（Jakarta Validation 校验），用户名唯一校验（错误码 10003），密码 BCrypt 加密存储，注册成功自动赋予 ROLE_USER
+> - 登录：POST /api/v1/auth/login，成功返回 JWT（有效期 2 小时）与用户信息 LoginVO；失败统一返回 401（不区分「用户不存在」和「密码错误」）
+> - 鉴权：除注册/登录/商品浏览（GET categories、products）与 Swagger 路径外，其余接口需携带 JWT
+> - 授权：/api/v1/admin/** 仅管理员可访问；开启 @EnableMethodSecurity，管理接口用 @PreAuthorize 权限注解控制
+> - 用户管理：GET /api/v1/admin/users 分页列表（user:manage 权限，VO 不含密码字段）；PUT /api/v1/admin/users/{id}/status 启用/禁用（禁止禁用自己，被禁用用户拒绝登录）
 > - 退出：JWT 加入 Redis 黑名单直至自然过期
+> 技术约束（写入 design.md）：
+> - Spring Security 用 Boot 3 风格 SecurityFilterChain（禁用 WebSecurityConfigurerAdapter/antMatchers 等废弃 API）
+> - JwtAuthenticationFilter 注册在 UsernamePasswordAuthenticationFilter 之前；解析 JWT 异常时吞掉并返回 401（统一响应体，同样处理 403）；关闭 CSRF
+> - JWT 载荷只含 userId、username、角色码列表，不放敏感信息；密钥从 application.yml 读取；登录时把权限码列表（role_permission 关联查询）放入认证上下文
+> - 实现风格参照 modules/category 样板
 > ```
 
 **预期产出**：`openspec/changes/add-auth/`（或类似名称），含 proposal.md、design.md、tasks.md 与 delta 规格。
@@ -72,18 +79,14 @@ admin        ROLE_ADMIN     product:write, user:manage ...
 
 tasks.md 会随提案一起生成，检查任务拆分是否合理，预期得到类似清单：用户注册 → 登录签发 JWT → JWT 过滤器 → 权限注解接入 → 退出黑名单。
 
-### 步骤 2：实现注册与登录
+> **实现节奏（OpenSpec 的正统做法）**：需求已经全部锁在提案里，后续实现一律由 tasks.md 驱动（`/opsx:apply`），**实现时不再重复描述需求**——这正是第 03 讲「提案先行」的意义。下面三个步骤分别对应三批任务，每批完成后做针对性审查。
 
-> **提示词示例：**
+### 步骤 2：实现注册与登录（任务驱动）
+
+> **指令示例：**
 >
 > ```
-> @openspec/changes（引用 add-auth 变更目录的提案与 delta 规格）@modules/category
-> 按提案实现认证模块 modules/auth 与用户模块 modules/user 的相关部分，参照 category 样板风格：
-> 1. POST /api/v1/auth/register：入参 RegisterDTO（username/password 带校验注解），
->    密码 BCrypt 加密存储，写入 user 表并关联 ROLE_USER
-> 2. POST /api/v1/auth/login：校验通过后签发 JWT（载荷：userId、username、角色码列表），
->    返回 LoginVO（token + 用户信息）
-> 3. 工具类 JwtUtil：生成、解析、校验 JWT，密钥从 application.yml 读取
+> /opsx:apply 按 tasks.md 开始实现，先做注册、登录与 JwtUtil 相关任务（@modules/category 参照样板风格）。一次只做一个任务，验证通过再继续下一个。
 > ```
 
 **预期产出**：auth/user 模块代码 + `security/JwtUtil.java`。
@@ -94,18 +97,15 @@ tasks.md 会随提案一起生成，检查任务拆分是否合理，预期得�
 - 登录失败时错误信息不区分「用户不存在」和「密码错误」（统一 401，防止账号探测）
 - JWT 密钥在配置文件中，**不硬编码在 Java 里**
 
-### 步骤 3：配置 Spring Security 与 JWT 过滤器
+### 步骤 3：实现 Spring Security 与 JWT 过滤器（继续任务驱动）
 
-> **提示词示例：**
+> **指令示例：**
 >
 > ```
-> 请配置 Spring Security（Boot 3 风格，使用 SecurityFilterChain Bean，不要用已废弃的 WebSecurityConfigurerAdapter）：
-> 1. 放行：/api/v1/auth/**、GET /api/v1/categories、GET /api/v1/products/**、Swagger 路径
-> 2. 其余请求需认证；注册 JwtAuthenticationFilter 在 UsernamePasswordAuthenticationFilter 之前
-> 3. 过滤器逻辑：解析 Authorization: Bearer 头 → 校验签名与过期 → 查 Redis 黑名单 → 构建认证上下文
-> 4. 无凭证返回 401 JSON（统一响应体），无权限返回 403 JSON
-> 5. 关闭 CSRF（前后端分离 + JWT 场景）
+> /opsx:apply 继续实现 tasks.md 中的 Spring Security 配置与 JWT 过滤器任务。
 > ```
+
+这批任务的技术约束已写在提案的 design.md 里（Boot 3 风格、过滤器位置、异常处理、401/403 统一响应、关闭 CSRF），AI 实现时会自行读取；你的工作是对照下面的清单审查产出：
 
 **预期产出**：`config/SecurityConfig.java`、`security/JwtAuthenticationFilter.java`。
 
@@ -118,18 +118,12 @@ tasks.md 会随提案一起生成，检查任务拆分是否合理，预期得�
 | 过滤器异常处理 | 解析 JWT 抛异常时必须吞掉并返回 401，不能让异常穿透成 500 |
 | 401/403 响应格式 | 是否走了统一响应体（AuthenticationEntryPoint / AccessDeniedHandler） |
 
-### 步骤 4：RBAC 权限控制
+### 步骤 4：实现 RBAC 权限控制（继续任务驱动）
 
-> **提示词示例：**
+> **指令示例：**
 >
 > ```
-> 1. 开启方法级权限注解 @EnableMethodSecurity
-> 2. 为后台管理接口添加权限控制，例如商品写操作 @PreAuthorize("hasAuthority('product:write')")
-> 3. 登录时把用户的权限码列表（来自 role_permission 关联查询）放入 JWT 或认证上下文
-> 4. 后台用户管理（需 user:manage 权限）：
->    - GET /api/v1/admin/users：用户分页列表（返回 VO，不含密码字段）
->    - PUT /api/v1/admin/users/{id}/status：启用/禁用用户（入参 ENABLED/DISABLED，写 user.status）；
->      禁止禁用自己，被禁用用户下次登录应被拒绝（登录校验补充 status 判断）
+> /opsx:apply 继续实现 tasks.md 中的权限注解与用户管理任务。
 > ```
 
 **预期产出**：权限注解生效的管理端接口 + 用户列表与启用/禁用功能。
